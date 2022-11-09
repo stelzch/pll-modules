@@ -1,4 +1,4 @@
 [submodule "libpll"]
 	path = libs/libpll
-	url = https://github.com/xflouris/libpll-2.git
-	branch = master
+	url = https://git.ch-st.de/christoph/libpll.git
+	branch = feature/reproducibility
