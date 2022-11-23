@@ -209,6 +209,10 @@ PLL_EXPORT pllmod_treeinfo_t * pllmod_treeinfo_create(pll_unode_t * root,
 
   assert(treeinfo->tree && treeinfo->tree->tip_count == tips);
 
+#ifdef REPRODUCIBLE
+  assert(partitions == 1);
+#endif
+
   return treeinfo;
 }
 

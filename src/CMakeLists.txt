@@ -6,7 +6,7 @@ if(PLLMOD_DEBUG)
 endif()
 
 set(CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined -Wl,dynamic_lookup")
-set(PLLMOD_INCLUDE_PATH  ${PLLMODULES_LIBPLL_PATH}/src/)
+set(PLLMOD_INCLUDE_PATH  ${PLLMODULES_LIBPLL_PATH}/src/ ${PLL_INCLUDE_DIRS} /usr/lib/x86_64-linux-gnu/openmpi/include)
 
 set(PLLMODULES_COMPONENTS "optimize;algorithm;binary;msa;tree;util" CACHE STRING "pll-modules components to build")
 

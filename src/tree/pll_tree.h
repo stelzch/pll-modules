@@ -28,6 +28,11 @@
 
 #include "stdbool.h"
 
+
+#ifdef REPRODUCIBLE
+#include <binary_tree_summation.h>
+#endif
+
 /**
  * PLL Tree utils module
  * Prefix: pll_tree_, pll_utree_, pll_rtree_

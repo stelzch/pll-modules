@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 
 project (Pll-modules)
+find_package(MPI)
 
 if (NOT DEFINED PLLMODULES_LIBPLL_PATH)
   set(PLLMODULES_LIBPLL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libs/libpll")
@@ -39,7 +40,7 @@ macro(add_pllmodules_lib target sources)
   if(BUILD_PLLMODULES_SHARED)
     add_library(${target}_shared SHARED $<TARGET_OBJECTS:${target}_obj>)
     set_target_properties(${target}_shared PROPERTIES OUTPUT_NAME "${target}")
-    target_link_libraries(${target}_shared ${PLL_LIBRARIES}) 
+    target_link_libraries(${target}_shared ${PLL_LIBRARIES} MPI::MPI_C)
     set(PLLMODULES_LIBRARIES 
       ${target}_shared ${PLLMODULES_LIBRARIES}
       CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
@@ -53,6 +54,18 @@ macro(add_pllmodules_lib target sources)
       CACHE INTERNAL "${PROJECT_NAME}: Libraries to link against")
   endif()
 endmacro()
+
+if(NOT DEFINED binarytreesummation_version)
+    set(binarytreesummation_version main)
+endif()
+include(FetchContent)
+FetchContent_Declare(
+        binarytreesummation
+        GIT_REPOSITORY https://git.ch-st.de/christoph/binary_tree_summation.git
+        GIT_TAG ${binarytreesummation_version}
+)
+FetchContent_MakeAvailable(binarytreesummation)
+add_definitions(-DREPRODUCIBLE)
 
 
 add_subdirectory(src)

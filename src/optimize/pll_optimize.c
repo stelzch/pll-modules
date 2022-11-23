@@ -36,6 +36,11 @@
 #include "pll_optimize.h"
 #include "lbfgsb/lbfgsb.h"
 #include "../pllmod_common.h"
+#include <stdint.h>
+
+#ifdef REPRODUCIBLE
+#include <binary_tree_summation.h>
+#endif
 
 #define BETTER_LL_TRESHOLD 1e-13
 
@@ -1195,6 +1200,26 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
                                                                          size_t,
                                                                          int))
 {
+#ifdef REPRODUCIBLE
+    assert(partition_count == 1);
+    assert(partitions[0]->reduction_context != NULL);
+
+    const double* buffer_ptr = get_reduction_buffer(partitions[0]->reduction_context);
+
+
+    pll_compute_edge_loglikelihood(partitions[0],
+                                   parent_clv_index,
+                                   parent_scaler_index,
+                                   child_clv_index,
+                                   child_scaler_index,
+                                   matrix_index,
+                                   params_indices[0],
+                                   buffer_ptr);
+
+    double loglh = reproducible_reduce(partitions[0]->reduction_context);
+
+    return loglh;
+#else
   double total_loglh = 0.;
 
   size_t p;
@@ -1218,6 +1243,7 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
     parallel_reduce_cb(parallel_context, &total_loglh, 1, PLLMOD_COMMON_REDUCE_SUM);
 
   return total_loglh;
+#endif
 }
 
 static void utree_derivative_func_multi (void * parameters, double * proposal,
