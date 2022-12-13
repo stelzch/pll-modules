@@ -1304,10 +1304,21 @@ static void utree_derivative_func_multi (void * parameters, double * proposal,
     }
     else
     {
+#ifdef REPRODUCIBLE
+      // TODO: make reproducible
+      // TODO: cache repr_context
+      ReductionContext ctx = new_reduction_context(2);
+      double *buf = get_reduction_buffer(ctx);
+      buf[0] = *df;
+      buf[1] = *ddf;
+
+#else
+      
       double d[2] = {*df, *ddf};
       params->parallel_reduce_cb(params->parallel_context, d, 2, PLLMOD_COMMON_REDUCE_SUM);
       *df = d[0];
       *ddf = d[1];
+#endif
     }
   }
 }

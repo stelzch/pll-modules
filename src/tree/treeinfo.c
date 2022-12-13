@@ -1022,6 +1022,68 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
 
 //  printf("Traversal size (%s): %u\n", incremental ? "part" : "full", ops_count);
 
+#ifdef REPRODUCIBLE
+  // TODO: accept partitioned datasets in reproducible mode
+  assert(treeinfo->partition_count == 1);
+
+  /* iterate over all partitions (we assume that traversal is the same) */
+  for (p = 0; p < treeinfo->partition_count; ++p)
+  {
+    
+    if (!treeinfo->partitions[p])
+    {
+      /* this partition will be computed by another thread(s) */
+      treeinfo->partition_loglh[p] = 0.0;
+      continue;
+    }
+
+    /* all subsequent operation will affect current partition only */
+    pllmod_treeinfo_set_active_partition(treeinfo, (int)p);
+
+    /* use the operations array to compute all ops_count inner CLVs. Operations
+       will be carried out sequentially starting from operation 0 towards
+       ops_count-1 */
+    pll_update_partials(treeinfo->partitions[p],
+                        treeinfo->operations,
+                        ops_count);
+
+    pllmod_treeinfo_validate_clvs(treeinfo,
+                                  treeinfo->travbuffer,
+                                  traversal_size);
+
+    /* compute the likelihood on an edge of the unrooted tree by specifying
+       the CLV indices at the two end-point of the branch, the probability
+       matrix index for the concrete branch length, and the index of the model
+       of whose frequency vector is to be used */
+    double *reduction_buffer = get_reduction_buffer(treeinfo->partitions[p]->reduction_context);
+    double result_loglh = pll_compute_edge_loglikelihood(
+        treeinfo->partitions[p],
+        treeinfo->root->clv_index,
+        treeinfo->root->scaler_index,
+        treeinfo->root->back->clv_index,
+        treeinfo->root->back->scaler_index,
+        treeinfo->root->pmatrix_index,
+        treeinfo->param_indices[p],
+        reduction_buffer);
+    printf("pll loglh result: %f\n", result_loglh);
+    double acc = 0.0;
+    for (int i=0; i<treeinfo->partitions[p]->sites; i++) {
+        acc += reduction_buffer[i];
+    }
+    treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context);
+  }
+
+  /* accumulate loglh by summing up over all the partitions */
+  for (p = 0; p < treeinfo->partition_count; ++p)
+    total_loglh += treeinfo->partition_loglh[p];
+
+  /* restore original active partition */
+  pllmod_treeinfo_set_active_partition(treeinfo, old_active_partition);
+
+  assert(total_loglh < 0.);
+
+  return total_loglh;
+#else
   /* iterate over all partitions (we assume that traversal is the same) */
   for (p = 0; p < treeinfo->partition_count; ++p)
   {
@@ -1080,6 +1142,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
   assert(total_loglh < 0.);
 
   return total_loglh;
+#endif
 }
 
 PLL_EXPORT double pllmod_treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
