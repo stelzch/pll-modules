@@ -1204,7 +1204,7 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
     assert(partition_count == 1);
     assert(partitions[0]->reduction_context != NULL);
 
-    const double* buffer_ptr = get_reduction_buffer(partitions[0]->reduction_context);
+    double* buffer_ptr = get_reduction_buffer(partitions[0]->reduction_context);
 
 
     pll_compute_edge_loglikelihood(partitions[0],
@@ -1249,6 +1249,7 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
 static void utree_derivative_func_multi (void * parameters, double * proposal,
                                          double *df, double *ddf)
 {
+  printf("Called libpll!!!!!!!\n");
   pll_newton_tree_params_multi_t * params =
                                 (pll_newton_tree_params_multi_t *) parameters;
   size_t p;
@@ -1304,13 +1305,17 @@ static void utree_derivative_func_multi (void * parameters, double * proposal,
     }
     else
     {
-#ifdef REPRODUCIBLE
+#if 0
       // TODO: make reproducible
       // TODO: cache repr_context
-      ReductionContext ctx = new_reduction_context(2);
+      ReductionContext ctx = new_reduction_context(0, 1);
       double *buf = get_reduction_buffer(ctx);
       buf[0] = *df;
-      buf[1] = *ddf;
+      *df = reproducible_reduce(ctx);
+
+      buf[0] = *ddf;
+      *ddf = reproducible_reduce(ctx);
+      printf("utree_derivative_func_multi: df=%.20f ddf=%.20f\n", *df, *ddf);
 
 #else
       

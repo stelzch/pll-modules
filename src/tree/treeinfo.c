@@ -1065,12 +1065,12 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
         treeinfo->root->pmatrix_index,
         treeinfo->param_indices[p],
         reduction_buffer);
-    printf("pll loglh result: %f\n", result_loglh);
-    double acc = 0.0;
-    for (int i=0; i<treeinfo->partitions[p]->sites; i++) {
-        acc += reduction_buffer[i];
-    }
+    //double acc = 0.0;
+    //for (int i=0; i<treeinfo->partitions[p]->sites; i++) {
+    //    acc += reduction_buffer[i];
+    //}
     treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context);
+    printf("pll loglh result: %.20f\n", treeinfo->partition_loglh[p]);
   }
 
   /* accumulate loglh by summing up over all the partitions */
