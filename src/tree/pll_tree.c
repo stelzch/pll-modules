@@ -1002,6 +1002,7 @@ pll_utree_t * pllmod_utree_create_parsimony(unsigned int taxon_count,
   pll_partition_t * partition = pll_partition_create(taxon_count,
                                                      0,   /* number of CLVs */
                                                      states,
+                                                     1,
                                                      0, // TODO: replace dummy value of sites_start_idx
                                                      seq_length,
                                                      1,

@@ -1070,7 +1070,10 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
     //    acc += reduction_buffer[i];
     //}
     treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context);
-    printf("pll loglh result: %.20f\n", treeinfo->partition_loglh[p]);
+    if (persite_lnl != NULL && persite_lnl[p] != NULL) {
+        memcpy(persite_lnl[p], reduction_buffer, treeinfo->partitions[p]->sites * sizeof(double));
+    }
+    //printf("pll loglh result: %.20f\n", treeinfo->partition_loglh[p]);
   }
 
   /* accumulate loglh by summing up over all the partitions */
