@@ -1207,8 +1207,6 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
     double* buffer_ptr = get_reduction_buffer(partitions[0]->reduction_context);
 
 
-    // TODO: using the buffer_ptr as persite_lnl argument discards user input on persite_lnl.
-    //       We should copy the psllh to persite_lnl, if it is not NULL
 
 
     pll_compute_edge_loglikelihood(partitions[0],
@@ -1220,7 +1218,16 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
                                    params_indices[0],
                                    buffer_ptr);
 
+    // Copy the persite array if it is requested.
+    // This must happen _before_ the reduce operation below, because it is inplace
+    // and writes into the reduction buffer.
+    if (persite_lnl != NULL) {
+        memcpy(persite_lnl, buffer_ptr, partitions[0]->sites * sizeof(double));
+    }
+
     double loglh = reproducible_reduce(partitions[0]->reduction_context);
+
+
 
     return loglh;
 #else
