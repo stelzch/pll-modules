@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 
-set(PLLMOD_CFLAGS  "-Wall -Wsign-compare -D_GNU_SOURCE -std=c99 -O1")
+set(PLLMOD_CFLAGS  "-Wall -Wsign-compare -D_GNU_SOURCE -std=c99 -O3")
 if(PLLMOD_DEBUG)
 	set(PLLMOD_CFLAGS "${PLLMOD_CFLAGS} -DDEBUG")
 endif()
