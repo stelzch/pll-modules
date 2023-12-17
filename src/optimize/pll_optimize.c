@@ -40,6 +40,7 @@
 
 #ifdef REPRODUCIBLE
 #include <binary_tree_summation.h>
+#include <ipc_debug.h>
 #endif
 
 #define BETTER_LL_TRESHOLD 1e-13
@@ -1226,6 +1227,7 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
     }
 
     double loglh = reproducible_reduce(partitions[0]->reduction_context);
+    debug_ipc_assert_equal_double(loglh);
 
 
 

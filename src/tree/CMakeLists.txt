@@ -32,5 +32,5 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PLLMOD_CFLAGS}")
 
 add_pllmodules_lib(pllmodtree "${TREE_SOURCES}")
 target_include_directories(pllmodtree_obj PRIVATE ${PLLMOD_INCLUDE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(pllmodtree_obj PRIVATE binarytreesummation)
+target_link_libraries(pllmodtree_obj PRIVATE binarytreesummation ipcdebug)
 

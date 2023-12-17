@@ -6,5 +6,5 @@ file(GLOB OPTIMIZE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.c
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PLLMOD_CFLAGS}")
 
 add_pllmodules_lib(pllmodoptimize "${OPTIMIZE_SOURCES}")
-target_link_libraries(pllmodoptimize_obj binarytreesummation)
+target_link_libraries(pllmodoptimize_obj binarytreesummation ipcdebug)
 

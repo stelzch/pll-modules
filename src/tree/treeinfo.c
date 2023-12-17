@@ -20,6 +20,7 @@
 */
 
 #include "pll_tree.h"
+#include <ipc_debug.h>
 
 #include "../pllmod_common.h"
 
@@ -1070,6 +1071,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
     //    acc += reduction_buffer[i];
     //}
     treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context);
+    debug_ipc_assert_equal_double(treeinfo->partition_loglh[p]);
     if (persite_lnl != NULL && persite_lnl[p] != NULL) {
         memcpy(persite_lnl[p], reduction_buffer, treeinfo->partitions[p]->sites * sizeof(double));
     }
