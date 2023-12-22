@@ -1201,6 +1201,19 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
                                                                          size_t,
                                                                          int))
 {
+    // Assert that p-matrix indices & CLV indices coincide
+    debug_ipc_assert_equal_uint(parent_clv_index);
+    debug_ipc_assert_equal_uint(child_clv_index);
+    debug_ipc_assert_equal_uint(matrix_index);
+
+
+    assert(partition_count == 1);
+    double *clv_p = partitions[0]->clv[parent_clv_index];
+    double *clv_c = partitions[0]->clv[child_clv_index];
+    const int span = partitions[0]->states + partitions[0]->rate_cats;
+    debug_ipc_assert_equal_mpi_double_array(clv_p, partitions[0]->sites, span);
+
+
 #ifdef REPRODUCIBLE
     assert(partition_count == 1);
     assert(partitions[0]->reduction_context != NULL);
@@ -1465,6 +1478,9 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t * params,
   tr_z = tr_q ? tr_q->next : NULL;
   pmatrix_index = tr_p->pmatrix_index;
 
+  debug_ipc_assert_equal_uint(tr_p == NULL ? 0 : tr_p->clv_index);
+  debug_ipc_assert_equal_uint(tr_q == NULL ? 0 : tr_q->clv_index);
+
   if (unlinked)
   {
     assert(params->brlen_buffers && params->brlen_orig && params->brlen_guess);
@@ -1484,9 +1500,12 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t * params,
     {
       params->parallel_reduce_cb(params->parallel_context, xguess, xnum,
                                  PLLMOD_COMMON_REDUCE_MAX);
+
+
     }
 
     memcpy(xorig, xguess, xnum * sizeof(double));
+    debug_ipc_assert_equal_array(xorig, xnum * sizeof(double));
   }
   else
   {
@@ -1928,6 +1947,7 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi (
                                                         NULL,
                                                         parallel_context,
                                                         parallel_reduce_cb);
+    debug_ipc_assert_equal_double(new_loglikelihood);
 
     DBG("BLO_multi: iteration %u, old LH: %.9f, new LH: %.9f\n",
         (unsigned int) max_iters - iters, loglikelihood, new_loglikelihood);

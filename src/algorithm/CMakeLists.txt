@@ -13,6 +13,6 @@ target_include_directories(pllmodalgorithm_obj PRIVATE ${PLLMOD_INCLUDE_PATH}
   )
 
 
-
+target_link_libraries(pllmodalgorithm_obj PRIVATE ipcdebug)
 
 

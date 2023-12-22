@@ -1010,6 +1010,16 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
       return LOGLH_NONE;
   }
 
+
+  // By this point, the traversal buffer should be set up. We can check all the nodes that
+  // the algorithm will visit and verify their correctness.
+  assert(treeinfo->partition_count = 1);
+  for (unsigned int i = 0; i < traversal_size; i++) {
+      debug_ipc_assert_equal_uint(treeinfo->travbuffer[i]->node_index);
+      debug_ipc_assert_equal_uint(treeinfo->travbuffer[i]->clv_index);
+
+  }
+
   /* create operations based on partial traversal obtained above */
   pll_utree_create_operations(treeinfo->travbuffer,
                               traversal_size,
