@@ -907,7 +907,9 @@ static double reinsert_nodes(pllmod_treeinfo_t * treeinfo, pll_unode_t ** nodes,
     }
 
     pll_unode_t * best_r_edge = spr_entry.r_node;
-    debug_ipc_assert_equal_uint(best_r_edge->node_index);
+    if (best_r_edge != NULL) {
+        debug_ipc_assert_equal_uint(best_r_edge->node_index);
+    }
 
     /* original placement is the best for the current node -> move on to the next one */
     if (!best_r_edge || best_r_edge == p_edge || best_r_edge == p_edge->back ||
