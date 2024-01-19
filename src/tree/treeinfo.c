@@ -1084,6 +1084,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
         reduction_buffer);
 
     // Check that the input data to the reproducible reduce is the same
+    DEBUG_IPC_CHECKPOINT();
     debug_ipc_assert_equal_mpi_double_array(reduction_buffer, treeinfo->partitions[0]->sites);
     treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context);
     debug_ipc_assert_equal_double(treeinfo->partition_loglh[p]);
