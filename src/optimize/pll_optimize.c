@@ -1202,16 +1202,23 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
                                                                          int))
 {
     // Assert that p-matrix indices & CLV indices coincide
+    DEBUG_IPC_CHECKPOINT();
     debug_ipc_assert_equal_uint(parent_clv_index);
     debug_ipc_assert_equal_uint(child_clv_index);
     debug_ipc_assert_equal_uint(matrix_index);
 
 
+    // Assert p matrix
+    size_t pmatrix_length = partitions[0]->states * partitions[0]->states_padded * partitions[0]->rate_cats;
+    debug_ipc_assert_equal_array(partitions[0]->pmatrix[matrix_index], pmatrix_length);
+
+    // Assert CLV
     assert(partition_count == 1);
     double *clv_p = partitions[0]->clv[parent_clv_index];
     double *clv_c = partitions[0]->clv[child_clv_index];
-    const int span = partitions[0]->states + partitions[0]->rate_cats;
-    debug_ipc_assert_equal_mpi_double_array(clv_p, partitions[0]->sites, span);
+    const int span = partitions[0]->states * partitions[0]->rate_cats;
+    DEBUG_IPC_CHECKPOINT();
+    debug_ipc_assert_equal_mpi_double_array(clv_c, partitions[0]->sites * 16);
 
 
 #ifdef REPRODUCIBLE

@@ -19,6 +19,7 @@
     Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 */
 
+#include "pll.h"
 #include "pll_tree.h"
 #include <ipc_debug.h>
 
@@ -1015,6 +1016,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
   // the algorithm will visit and verify their correctness.
   assert(treeinfo->partition_count = 1);
   for (unsigned int i = 0; i < traversal_size; i++) {
+      DEBUG_IPC_CHECKPOINT();
       debug_ipc_assert_equal_uint(treeinfo->travbuffer[i]->node_index);
       debug_ipc_assert_equal_uint(treeinfo->travbuffer[i]->clv_index);
 
@@ -1028,6 +1030,10 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
                               treeinfo->operations,
                               NULL,
                               &ops_count);
+
+  // Assume that operations are the same
+  debug_ipc_assert_equal_array(treeinfo->operations, sizeof(pll_operation_t) * ops_count);
+
 
   treeinfo->counter += ops_count;
 
@@ -1076,10 +1082,9 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
         treeinfo->root->pmatrix_index,
         treeinfo->param_indices[p],
         reduction_buffer);
-    //double acc = 0.0;
-    //for (int i=0; i<treeinfo->partitions[p]->sites; i++) {
-    //    acc += reduction_buffer[i];
-    //}
+
+    // Check that the input data to the reproducible reduce is the same
+    debug_ipc_assert_equal_mpi_double_array(reduction_buffer, treeinfo->partitions[0]->sites);
     treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context);
     debug_ipc_assert_equal_double(treeinfo->partition_loglh[p]);
     if (persite_lnl != NULL && persite_lnl[p] != NULL) {
