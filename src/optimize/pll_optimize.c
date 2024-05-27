@@ -40,7 +40,6 @@
 
 #ifdef REPRODUCIBLE
 #include <binary_tree_summation.h>
-#include <ipc_debug.h>
 #endif
 
 #define BETTER_LL_TRESHOLD 1e-13
@@ -1201,31 +1200,11 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
                                                                          size_t,
                                                                          int))
 {
-    // Assert that p-matrix indices & CLV indices coincide
-    DEBUG_IPC_CHECKPOINT();
-    debug_ipc_assert_equal_uint(parent_clv_index);
-    debug_ipc_assert_equal_uint(child_clv_index);
-    debug_ipc_assert_equal_uint(matrix_index);
-
-
-    // Assert p matrix
-    size_t pmatrix_length = partitions[0]->states * partitions[0]->states_padded * partitions[0]->rate_cats;
-    debug_ipc_assert_equal_array(partitions[0]->pmatrix[matrix_index], pmatrix_length);
-
-    // Assert CLV
-    assert(partition_count == 1);
-    double *clv_p = partitions[0]->clv[parent_clv_index];
-    double *clv_c = partitions[0]->clv[child_clv_index];
-    const int span = partitions[0]->states * partitions[0]->rate_cats;
-    DEBUG_IPC_CHECKPOINT();
-    debug_ipc_assert_equal_mpi_double_array(clv_c, partitions[0]->sites * 16);
-
-
 #ifdef REPRODUCIBLE
     assert(partition_count == 1);
-    assert(partitions[0]->reduction_context != NULL);
+    assert(partitions[0]->reduction_context1 != NULL);
 
-    double* buffer_ptr = get_reduction_buffer(partitions[0]->reduction_context);
+    double* buffer_ptr = get_reduction_buffer(partitions[0]->reduction_context1);
 
 
 
@@ -1246,9 +1225,7 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
         memcpy(persite_lnl, buffer_ptr, partitions[0]->sites * sizeof(double));
     }
 
-    double loglh = reproducible_reduce(partitions[0]->reduction_context);
-    debug_ipc_assert_equal_double(loglh);
-
+    double loglh = reproducible_reduce(partitions[0]->reduction_context1);
 
 
     return loglh;
@@ -1485,9 +1462,6 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t * params,
   tr_z = tr_q ? tr_q->next : NULL;
   pmatrix_index = tr_p->pmatrix_index;
 
-  debug_ipc_assert_equal_uint(tr_p == NULL ? 0 : tr_p->clv_index);
-  debug_ipc_assert_equal_uint(tr_q == NULL ? 0 : tr_q->clv_index);
-
   if (unlinked)
   {
     assert(params->brlen_buffers && params->brlen_orig && params->brlen_guess);
@@ -1512,7 +1486,6 @@ static int recomp_iterative_multi(pll_newton_tree_params_multi_t * params,
     }
 
     memcpy(xorig, xguess, xnum * sizeof(double));
-    debug_ipc_assert_equal_array(xorig, xnum * sizeof(double));
   }
   else
   {
@@ -1954,7 +1927,6 @@ PLL_EXPORT double pllmod_opt_optimize_branch_lengths_local_multi (
                                                         NULL,
                                                         parallel_context,
                                                         parallel_reduce_cb);
-    debug_ipc_assert_equal_double(new_loglikelihood);
 
     DBG("BLO_multi: iteration %u, old LH: %.9f, new LH: %.9f\n",
         (unsigned int) max_iters - iters, loglikelihood, new_loglikelihood);

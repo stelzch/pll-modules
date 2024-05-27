@@ -30,7 +30,6 @@ Schloss-Wolfsbrunnenweg 35, D-69118 Heidelberg, Germany
 
 #include "pllmod_algorithm.h"
 #include "../pllmod_common.h"
-#include "ipc_debug.h"
 
 /* if not defined, branch length optimization will use
 * the same starting set of branch lengths for every topology */
@@ -698,10 +697,6 @@ static int best_reinsert_edge(pllmod_treeinfo_t * treeinfo,
   assert(retval == PLL_SUCCESS);
 
   
-  for (unsigned int i = 0; i < ncount; i++) {
-    debug_ipc_assert_equal_uint(regraft_nodes[redge_count - ncount + i]->clv_index);
-  }
-
   /* initialize regraft distances */
   regraft_dist = (unsigned int *) calloc(total_edge_count, sizeof(unsigned int));
   if (!regraft_dist)
@@ -885,8 +880,6 @@ static double reinsert_nodes(pllmod_treeinfo_t * treeinfo, pll_unode_t ** nodes,
   {
     pll_unode_t * p_edge = nodes[i];
 
-    debug_ipc_assert_equal_uint(p_edge->node_index);
-
     assert(!pllmod_utree_is_tip(p_edge));
 
     /* if remaining pruned tree would only contain 2 taxa, skip this node */
@@ -907,9 +900,6 @@ static double reinsert_nodes(pllmod_treeinfo_t * treeinfo, pll_unode_t ** nodes,
     }
 
     pll_unode_t * best_r_edge = spr_entry.r_node;
-    if (best_r_edge != NULL) {
-        debug_ipc_assert_equal_uint(best_r_edge->node_index);
-    }
 
     /* original placement is the best for the current node -> move on to the next one */
     if (!best_r_edge || best_r_edge == p_edge || best_r_edge == p_edge->back ||
@@ -918,17 +908,12 @@ static double reinsert_nodes(pllmod_treeinfo_t * treeinfo, pll_unode_t ** nodes,
       continue;
     }
 
-    debug_ipc_assert_equal_double(spr_entry.lh);
-
     /* LH improved -> re-apply the SPR move */
     if (spr_entry.lh - best_lh > 1e-6)
     {
       /* re-apply best SPR move for the node */
       DBG("SPR: %u -> (%u %u)\n", p_edge->clv_index,
           best_r_edge->clv_index, best_r_edge->back->clv_index);
-      debug_ipc_assert_equal_uint(p_edge->clv_index);
-      debug_ipc_assert_equal_uint(best_r_edge->clv_index);
-      debug_ipc_assert_equal_uint(best_r_edge->back->clv_index);
 
       pll_unode_t * orig_prune_edge = p_edge->next->back;
       int retval = algo_utree_spr(treeinfo, params, p_edge, best_r_edge, rollback);
@@ -970,7 +955,6 @@ static double reinsert_nodes(pllmod_treeinfo_t * treeinfo, pll_unode_t ** nodes,
       best_lh = spr_entry.lh;
 
       DBG("New best: %f\n", best_lh);
-      debug_ipc_assert_equal_double(best_lh);
     }
     else if (best_r_edge)
     {
@@ -979,11 +963,6 @@ static double reinsert_nodes(pllmod_treeinfo_t * treeinfo, pll_unode_t ** nodes,
 
       DBG("SAVE bestnode[%d]: %lf %lf %lf\n",
           spr_entry.rollback_num, spr_entry.b1[0], spr_entry.b2[0], spr_entry.b3[0]);
-
-      debug_ipc_assert_equal_uint(spr_entry.rollback_num);
-      debug_ipc_assert_equal_double(spr_entry.b1[0]);
-      debug_ipc_assert_equal_double(spr_entry.b2[0]);
-      debug_ipc_assert_equal_double(spr_entry.b3[0]);
 
       algo_bestnode_list_save(best_node_list, &spr_entry);
       loglh = spr_entry.lh;

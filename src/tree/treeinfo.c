@@ -21,7 +21,6 @@
 
 #include "pll.h"
 #include "pll_tree.h"
-#include <ipc_debug.h>
 
 #include "../pllmod_common.h"
 
@@ -1015,12 +1014,6 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
   // By this point, the traversal buffer should be set up. We can check all the nodes that
   // the algorithm will visit and verify their correctness.
   assert(treeinfo->partition_count = 1);
-  for (unsigned int i = 0; i < traversal_size; i++) {
-      DEBUG_IPC_CHECKPOINT();
-      debug_ipc_assert_equal_uint(treeinfo->travbuffer[i]->node_index);
-      debug_ipc_assert_equal_uint(treeinfo->travbuffer[i]->clv_index);
-
-  }
 
   /* create operations based on partial traversal obtained above */
   pll_utree_create_operations(treeinfo->travbuffer,
@@ -1030,9 +1023,6 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
                               treeinfo->operations,
                               NULL,
                               &ops_count);
-
-  // Assume that operations are the same
-  debug_ipc_assert_equal_array(treeinfo->operations, sizeof(pll_operation_t) * ops_count);
 
 
   treeinfo->counter += ops_count;
@@ -1072,7 +1062,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
        the CLV indices at the two end-point of the branch, the probability
        matrix index for the concrete branch length, and the index of the model
        of whose frequency vector is to be used */
-    double *reduction_buffer = get_reduction_buffer(treeinfo->partitions[p]->reduction_context);
+    double *reduction_buffer = get_reduction_buffer(treeinfo->partitions[p]->reduction_context1);
     double result_loglh = pll_compute_edge_loglikelihood(
         treeinfo->partitions[p],
         treeinfo->root->clv_index,
@@ -1083,11 +1073,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
         treeinfo->param_indices[p],
         reduction_buffer);
 
-    // Check that the input data to the reproducible reduce is the same
-    DEBUG_IPC_CHECKPOINT();
-    debug_ipc_assert_equal_mpi_double_array(reduction_buffer, treeinfo->partitions[0]->sites);
-    treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context);
-    debug_ipc_assert_equal_double(treeinfo->partition_loglh[p]);
+    treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context1);
     if (persite_lnl != NULL && persite_lnl[p] != NULL) {
         memcpy(persite_lnl[p], reduction_buffer, treeinfo->partitions[p]->sites * sizeof(double));
     }
