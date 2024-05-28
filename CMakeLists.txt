@@ -55,6 +55,7 @@ macro(add_pllmodules_lib target sources)
   endif()
 endmacro()
 
+if(DEFINED REPRODUCIBLE)
 if(NOT DEFINED binarytreesummation_version)
     set(binarytreesummation_version main)
 endif()
@@ -66,6 +67,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(binarytreesummation)
 add_definitions(-DREPRODUCIBLE)
+endif()
 
 
 add_subdirectory(src)
