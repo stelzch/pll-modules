@@ -39,7 +39,6 @@
 #include <stdint.h>
 
 #ifdef REPRODUCIBLE
-#include <reproBLAS.h>
 #include <binary_tree_summation.h>
 #endif
 

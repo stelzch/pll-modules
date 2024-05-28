@@ -31,7 +31,6 @@
 
 #ifdef REPRODUCIBLE
 #include <binary_tree_summation.h>
-#include <reproBLAS.h>
 #endif
 
 /**

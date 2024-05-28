@@ -2,9 +2,6 @@ cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 
 project (Pll-modules)
 find_package(MPI)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(reproblas REQUIRED IMPORTED_TARGET reproblas)
-
 
 if (NOT DEFINED PLLMODULES_LIBPLL_PATH)
   set(PLLMODULES_LIBPLL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libs/libpll")
@@ -68,9 +65,7 @@ FetchContent_Declare(
         GIT_TAG ${binarytreesummation_version}
 )
 FetchContent_MakeAvailable(binarytreesummation)
-if (DEFINED USE_REPRODUCIBLE)
-    add_definitions(-DREPRODUCIBLE=${USE_REPRODUCIBLE})
-endif()
+add_definitions(-DREPRODUCIBLE)
 
 
 add_subdirectory(src)
