@@ -1,4 +1,4 @@
 [submodule "libpll"]
 	path = libs/libpll
-	url = https://git.ch-st.de/christoph/libpll.git
+	url = https://github.com/stelzch/libpll.git
 	branch = feature/reproducibility
