@@ -1201,34 +1201,40 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
                                                                          int))
 {
 #ifdef REPRODUCIBLE
-    assert(partition_count == 1);
-    assert(partitions[0]->reduction_context1 != NULL);
+  double total_loglh = 0.;
 
-    double* buffer_ptr = get_reduction_buffer(partitions[0]->reduction_context1);
+  size_t p;
+  for (p = 0; p < partition_count; ++p)
+  {
+    /* skip remote partitions */
+    if (!partitions[p])
+      continue;
+
+    double* buffer_ptr = get_reduction_buffer(partitions[p]->reduction_context1);
 
 
 
 
-    pll_compute_edge_loglikelihood(partitions[0],
+    pll_compute_edge_loglikelihood(partitions[p],
                                    parent_clv_index,
                                    parent_scaler_index,
                                    child_clv_index,
                                    child_scaler_index,
                                    matrix_index,
-                                   params_indices[0],
+                                   params_indices[p],
                                    buffer_ptr);
 
     // Copy the persite array if it is requested.
     // This must happen _before_ the reduce operation below, because it is inplace
     // and writes into the reduction buffer.
     if (persite_lnl != NULL) {
-        memcpy(persite_lnl, buffer_ptr, partitions[0]->sites * sizeof(double));
+        memcpy(persite_lnl, buffer_ptr, partitions[p]->sites * sizeof(double));
     }
 
-    double loglh = reproducible_reduce(partitions[0]->reduction_context1);
+    total_loglh += reproducible_reduce(partitions[p]->reduction_context1);
+  }
 
-
-    return loglh;
+  return total_loglh;
 #else
   double total_loglh = 0.;
 

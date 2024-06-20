@@ -350,6 +350,7 @@ PLL_EXPORT pll_partition_t * pllmod_binary_partition_load(FILE * bin_file,
         tips,
         clv_buffers,
         aux_partition.states,
+        NULL, // TODO: determine correct value for communicator in this case
         0,
         aux_partition.sites,
         aux_partition.rate_matrices,

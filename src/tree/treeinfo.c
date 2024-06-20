@@ -210,10 +210,6 @@ PLL_EXPORT pllmod_treeinfo_t * pllmod_treeinfo_create(pll_unode_t * root,
 
   assert(treeinfo->tree && treeinfo->tree->tip_count == tips);
 
-#ifdef REPRODUCIBLE
-  assert(partitions == 1);
-#endif
-
   return treeinfo;
 }
 
@@ -1013,7 +1009,7 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
 
   // By this point, the traversal buffer should be set up. We can check all the nodes that
   // the algorithm will visit and verify their correctness.
-  assert(treeinfo->partition_count = 1);
+  //assert(treeinfo->partition_count = 1);
 
   /* create operations based on partial traversal obtained above */
   pll_utree_create_operations(treeinfo->travbuffer,
@@ -1030,9 +1026,6 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
 //  printf("Traversal size (%s): %u\n", incremental ? "part" : "full", ops_count);
 
 #ifdef REPRODUCIBLE
-  // TODO: accept partitioned datasets in reproducible mode
-  assert(treeinfo->partition_count == 1);
-
   /* iterate over all partitions (we assume that traversal is the same) */
   for (p = 0; p < treeinfo->partition_count; ++p)
   {
