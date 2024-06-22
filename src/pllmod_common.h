@@ -29,6 +29,7 @@
 #define PLLMOD_COMMON_REDUCE_SUM     0
 #define PLLMOD_COMMON_REDUCE_MAX     1
 #define PLLMOD_COMMON_REDUCE_MIN     2
+#define PLLMOD_COMMON_REDUCE_OR      3
 
 #define PLLMOD_UNUSED(expr) do { (void)(expr); } while (0)
 
