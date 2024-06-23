@@ -1201,7 +1201,9 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
                                                                          int))
 {
 #ifdef REPRODUCIBLE
-  double total_loglh = 0.;
+
+  double *partition_loglh = (double *) malloc(partition_count * sizeof(double));
+  memset(partition_loglh, 0, partition_count * sizeof(double));
 
   size_t p;
   for (p = 0; p < partition_count; ++p)
@@ -1231,9 +1233,18 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
         memcpy(persite_lnl, buffer_ptr, partitions[p]->sites * sizeof(double));
     }
 
-    total_loglh += reproducible_reduce(partitions[p]->reduction_context1);
+    partition_loglh[p] = reproducible_reduce(partitions[p]->reduction_context1);
   }
 
+  if (parallel_reduce_cb)
+    parallel_reduce_cb(parallel_context, partition_loglh, partition_count, PLLMOD_COMMON_REDUCE_OR);
+
+  double total_loglh = 0.;
+  for (unsigned int p = 0; p < partition_count; ++p) {
+      total_loglh += partition_loglh[p];
+  }
+
+  free(partition_loglh);
   return total_loglh;
 #else
   double total_loglh = 0.;
@@ -1265,7 +1276,6 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
 static void utree_derivative_func_multi (void * parameters, double * proposal,
                                          double *df, double *ddf)
 {
-  //printf("Called libpll!!!!!!!\n");
   pll_newton_tree_params_multi_t * params =
                                 (pll_newton_tree_params_multi_t *) parameters;
   size_t p;
@@ -1278,6 +1288,14 @@ static void utree_derivative_func_multi (void * parameters, double * proposal,
   }
   else
     *df = *ddf = 0;
+
+  double *partition_df, *partition_ddf;
+#ifdef REPRODUCIBLE
+  partition_df = (double *) malloc(params->partition_count * sizeof(double));
+  partition_ddf = (double *) malloc(params->partition_count * sizeof(double));
+  memset(partition_df, 0, params->partition_count * sizeof(double));
+  memset(partition_ddf, 0, params->partition_count * sizeof(double));
+#endif
 
   /* simply iterate over partitions and add up the derivatives */
   for (p = 0; p < params->partition_count; ++p)
@@ -1297,6 +1315,10 @@ static void utree_derivative_func_multi (void * parameters, double * proposal,
                                         params->precomp_buffers[p],
                                         &p_df, &p_ddf);
 
+#ifdef REPRODUCIBLE
+    partition_df[p] = s * p_df;
+    partition_ddf[p] = s * s * p_ddf;
+#else 
     /* chain rule! */
     if (unlinked)
     {
@@ -1308,10 +1330,34 @@ static void utree_derivative_func_multi (void * parameters, double * proposal,
       df[0] += s * p_df;
       ddf[0] += s * s * p_ddf;
     }
+#endif
   }
 
   if (params->parallel_reduce_cb)
   {
+#ifdef REPRODUCIBLE
+    if (unlinked)
+    {
+        memcpy(df, partition_df, params->partition_count * sizeof(double));
+        memcpy(ddf, partition_ddf, params->partition_count * sizeof(double));
+        params->parallel_reduce_cb(params->parallel_context, df,
+                                   params->partition_count, PLLMOD_COMMON_REDUCE_OR);
+        params->parallel_reduce_cb(params->parallel_context, ddf,
+                                   params->partition_count, PLLMOD_COMMON_REDUCE_OR);
+    }
+    else
+    {
+        params->parallel_reduce_cb(params->parallel_context, partition_df,
+                                   params->partition_count, PLLMOD_COMMON_REDUCE_OR);
+        params->parallel_reduce_cb(params->parallel_context, partition_ddf,
+                                   params->partition_count, PLLMOD_COMMON_REDUCE_OR);
+
+        for (unsigned int i = 0; i < params->partition_count; ++i) {
+            df[0] += partition_df[i];
+            ddf[0] += partition_ddf[i];
+        }
+    }
+#else
     if (unlinked)
     {
       params->parallel_reduce_cb(params->parallel_context, df, 
@@ -1321,17 +1367,19 @@ static void utree_derivative_func_multi (void * parameters, double * proposal,
     }
     else
     {
-#ifndef REPRODUCIBLE
-
-      // In case REPRODUCIBLE is defined, the returned values will already be reduced.
-      // In the unreproducible version, we need to manually call the reduce callback.
       double d[2] = {*df, *ddf};
       params->parallel_reduce_cb(params->parallel_context, d, 2, PLLMOD_COMMON_REDUCE_SUM);
       *df = d[0];
       *ddf = d[1];
-#endif
     }
+#endif
   }
+
+#ifdef REPRODUCIBLE
+  free(partition_df);
+  free(partition_ddf);
+#endif
+
 }
 
 static void utree_derivative_func_multi_old (void * parameters, double proposal,

@@ -1073,13 +1073,16 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
     //printf("pll loglh result: %.20f\n", treeinfo->partition_loglh[p]);
   }
 
-  /* sum up likelihood from all threads */
+  /* Gather likelihood from all threads.
+   * If the current thread did not participate in the computation the respective entry in partition_loglh will be 0.
+   * However we can not sum as below because that would count partition loglhs twice if they are resident on multiple PEs.
+   */
   if (treeinfo->parallel_reduce_cb)
   {
     treeinfo->parallel_reduce_cb(treeinfo->parallel_context,
                                  treeinfo->partition_loglh,
                                  p,
-                                 PLLMOD_COMMON_REDUCE_SUM);
+                                 PLLMOD_COMMON_REDUCE_OR);
   }
 
   /* accumulate loglh by summing up over all the partitions */
