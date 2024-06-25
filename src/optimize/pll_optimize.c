@@ -42,6 +42,10 @@
 #include <binary_tree_summation.h>
 #endif
 
+#ifdef IPCDEBUG
+#include <ipc_debug.h>
+#endif
+
 #define BETTER_LL_TRESHOLD 1e-13
 
 /*
@@ -1244,6 +1248,10 @@ PLL_EXPORT double pllmod_opt_compute_edge_loglikelihood_multi(
       total_loglh += partition_loglh[p];
   }
 
+#ifdef IPCDEBUG
+  debug_ipc_assert_equal_double(total_loglh);
+#endif
+
   free(partition_loglh);
   return total_loglh;
 #else
@@ -1356,6 +1364,7 @@ static void utree_derivative_func_multi (void * parameters, double * proposal,
             df[0] += partition_df[i];
             ddf[0] += partition_ddf[i];
         }
+
     }
 #else
     if (unlinked)
@@ -1374,6 +1383,11 @@ static void utree_derivative_func_multi (void * parameters, double * proposal,
     }
 #endif
   }
+
+#ifdef IPCDEBUG
+        debug_ipc_assert_equal_double(df[0]);
+        debug_ipc_assert_equal_double(ddf[0]);
+#endif
 
 #ifdef REPRODUCIBLE
   free(partition_df);

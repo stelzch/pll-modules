@@ -36,3 +36,7 @@ if(DEFINED REPRODUCIBLE)
 target_link_libraries(pllmodtree_obj PRIVATE binarytreesummation)
 endif()
 
+if(DEFINED IPCDEBUG)
+target_link_libraries(pllmodtree_obj PRIVATE ipcdebug)
+endif()
+

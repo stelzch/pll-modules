@@ -10,3 +10,6 @@ if(DEFINED REPRODUCIBLE)
 target_link_libraries(pllmodoptimize_obj binarytreesummation)
 endif()
 
+if(DEFINED IPCDEBUG)
+target_link_libraries(pllmodoptimize_obj ipcdebug)
+endif()

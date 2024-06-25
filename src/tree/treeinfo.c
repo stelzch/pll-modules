@@ -24,6 +24,10 @@
 
 #include "../pllmod_common.h"
 
+#ifdef IPCDEBUG
+#include <ipc_debug.h>
+#endif
+
 static int treeinfo_check_tree(pllmod_treeinfo_t * treeinfo,
                                pll_utree_t * tree);
 static int treeinfo_init_tree(pllmod_treeinfo_t * treeinfo);
@@ -1067,6 +1071,10 @@ static double treeinfo_compute_loglh(pllmod_treeinfo_t * treeinfo,
         reduction_buffer);
 
     treeinfo->partition_loglh[p] = reproducible_reduce(treeinfo->partitions[p]->reduction_context1);
+
+#ifdef IPCDEBUG
+    debug_ipc_assert_equal_double(treeinfo->partition_loglh[p]);
+#endif
     if (persite_lnl != NULL && persite_lnl[p] != NULL) {
         memcpy(persite_lnl[p], reduction_buffer, treeinfo->partitions[p]->sites * sizeof(double));
     }

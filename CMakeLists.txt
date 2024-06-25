@@ -69,6 +69,14 @@ FetchContent_MakeAvailable(binarytreesummation)
 add_definitions(-DREPRODUCIBLE)
 endif()
 
+if(DEFINED IPCDEBUG)
+FetchContent_Declare(ipcdebug
+    GIT_REPOSITORY https://git.ch-st.de/christoph/ipc_debug.git
+    GIT_TAG ${ipcdebug_version}
+)
+FetchContent_MakeAvailable(ipcdebug)
+endif()
+
 
 add_subdirectory(src)
 
