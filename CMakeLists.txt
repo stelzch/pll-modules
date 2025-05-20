@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
 
 project (Pll-modules)
 find_package(MPI)
@@ -37,6 +37,9 @@ macro(add_pllmodules_lib target sources)
   add_library(${target}_obj OBJECT ${sources})
   set_property(TARGET ${target}_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
   target_include_directories(${target}_obj PRIVATE ${PLLMOD_INCLUDE_PATH})
+  if(DEFINED REPRODUCIBLE)
+    target_link_libraries(${target}_obj PUBLIC reprored)
+  endif()
   if(BUILD_PLLMODULES_SHARED)
     add_library(${target}_shared SHARED $<TARGET_OBJECTS:${target}_obj>)
     set_target_properties(${target}_shared PROPERTIES OUTPUT_NAME "${target}")
@@ -56,16 +59,6 @@ macro(add_pllmodules_lib target sources)
 endmacro()
 
 if(DEFINED REPRODUCIBLE)
-if(NOT DEFINED binarytreesummation_version)
-    set(binarytreesummation_version main)
-endif()
-include(FetchContent)
-FetchContent_Declare(
-        binarytreesummation
-        GIT_REPOSITORY https://git.ch-st.de/christoph/binary_tree_summation.git
-        GIT_TAG ${binarytreesummation_version}
-)
-FetchContent_MakeAvailable(binarytreesummation)
 add_definitions(-DREPRODUCIBLE)
 endif()
 
@@ -73,4 +66,3 @@ endif()
 add_subdirectory(src)
 
 set(PLLMOD_EXPORTED_INCLUDE_PATH ${PLLMOD_EXPORTED_INCLUDE_PATH} ${PLL_EXPORTED_INCLUDE_PATH} PARENT_SCOPE)
-
